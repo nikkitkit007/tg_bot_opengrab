@@ -9,3 +9,5 @@ class User(Base):
     mail = Column(String)
     is_admin = Column(Boolean)
     is_auth = Column(Boolean)
+    tg_id = Column(Integer)
+    role = Column(String)
