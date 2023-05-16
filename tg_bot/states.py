@@ -1,4 +1,5 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram import types
 
 
 class AuthState(StatesGroup):
@@ -9,6 +10,11 @@ class AuthState(StatesGroup):
 
 class MenuState(StatesGroup):
     main = State()
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    base_buttons = ['Рассылка', 'Подписка']
+    admin_buttons = ['Управление клиентами', ]
+    keyboard.add(*(base_buttons+admin_buttons))
 
 
 class AdminMenuState(MenuState):
@@ -23,7 +29,15 @@ class SubscribeSettings(StatesGroup):
     update_subscribe_tariff = State()
     update_newsletter_time = State()
 
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    base_buttons = ['Информация о подписке', 'Изменить время получения рассылки', 'Изменить тариф', 'Назад']
+    keyboard.add(*base_buttons)
+
 
 class Newsletter(StatesGroup):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    base_buttons = ['Получить сейчас рассылку в чат', 'Получить сейчас рассылку в на почту', 'Назад']
+    keyboard.add(*base_buttons)
+
     main = State()
 

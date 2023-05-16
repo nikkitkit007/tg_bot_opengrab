@@ -45,10 +45,7 @@ async def process_start_command(message: types.Message):
     user_tg_id = message.from_user.id
     if is_auth(user_tg_id):
         await MenuState.main.set()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ['Рассылка', 'Подписка']
-        keyboard.add(*buttons)
-        await message.answer('Выберите действие:', reply_markup=keyboard)
+        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
     else:
         await AuthState.waiting_for_email.set()
         await message.answer("Для авторизации необходимо ввести ваш <b>mail</b> с помощью которого вы регистрировались",
@@ -77,28 +74,16 @@ async def process_email(message: types.Message, state: FSMContext):
 async def main_menu(message: types.Message, state: FSMContext):
     if message.text == 'Рассылка':
         await Newsletter.main.set()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ['Получить сейчас рассылку в чат', 'Получить сейчас рассылку в на почту', 'Назад']
-        keyboard.add(*buttons)
-        await message.answer('Выберите действие:', reply_markup=keyboard)
+        await message.answer('Выберите действие:', reply_markup=Newsletter.keyboard)
     elif message.text == 'Подписка':
         await SubscribeSettings.main.set()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ['Информация о подписке', 'Изменить время получения рассылки', 'Изменить тариф', 'Назад']
-        keyboard.add(*buttons)
-        await message.answer('Выберите действие:', reply_markup=keyboard)
-    elif message.text == 'Назад':
-        await MenuState.main.set()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ['Рассылка', 'Подписка']
-        keyboard.add(*buttons)
-        await message.answer('Выберите действие:', reply_markup=keyboard)
+        await message.answer('Выберите действие:', reply_markup=SubscribeSettings.keyboard)
     else:
         await message.reply('Не верная команда.')
 
 
 @dp.message_handler(state=SubscribeSettings.main)
-async def process_email(message: types.Message, state: FSMContext):
+async def subscribe_settings_menu(message: types.Message, state: FSMContext):
     if message.text == 'Информация о подписке':
         print(message.text)
     elif message.text == 'Изменить время получения рассылки':
@@ -106,29 +91,24 @@ async def process_email(message: types.Message, state: FSMContext):
     elif message.text == 'Изменить тариф':
         print(message.text)
     elif message.text == 'Назад':
-        await message.reply('Не верная команда.')
         await MenuState.main.set()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ['Рассылка', 'Подписка']
-        keyboard.add(*buttons)
-        await message.answer('Выберите действие:', reply_markup=keyboard)
+        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
     else:
         await message.reply('Не верная команда.')
 
 
 @dp.message_handler(state=Newsletter.main)
-async def process_email(message: types.Message, state: FSMContext):
+async def news_letter_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить сейчас рассылку в чат':
         print(message.text)
     elif message.text == 'Получить сейчас рассылку в на почту':
         print(message.text)
+    elif message.text == 'Назад':
+        await MenuState.main.set()
+        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
     else:
         await message.reply('Не верная команда.')
-        await MenuState.main.set()
-        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        buttons = ['Рассылка', 'Подписка']
-        keyboard.add(*buttons)
-        await message.answer('Выберите действие:', reply_markup=keyboard)
+
 
 # def ask_mail(message: types.Message, state: FSMContext):
 #     context.user_data['mail'] = update.message.text
