@@ -56,6 +56,6 @@ class Settings:
     DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
 
     DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    DB_ECHO = True
+    DB_ECHO = False
 
     logger = logging.getLogger('info_logger')
