@@ -11,7 +11,7 @@ from tg_bot.utils import validate
 
 from db.connection import async_session
 
-from db.worker.user_wrk import UserWorker
+from db.worker.user_wrk import UserWorker, User
 
 settings = Settings()
 
@@ -24,14 +24,18 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 
 
-def is_auth(tg_id: int) -> bool:
-    # async with async_session() as session:
-    #     user = await UserWorker.get(session, tg_id)
-    #     await session.commit()
-    # if user.is_auth:
-    #     return True
-    # return False
-    return True
+async def is_auth(tg_id: int) -> bool:
+    async with async_session() as session:
+        user = await UserWorker.get(session, tg_id)
+        if not user:
+            user_data = User(tg_id=tg_id, is_admin=False, is_auth=True, role='Author')
+            await UserWorker.add(session, user_data.dict)
+            await session.commit()
+            # запуск авторизации через почту #!todo
+            return True
+    if user[0].is_auth:
+        return True
+    return False
 
 
 def show_buttons():
@@ -44,7 +48,7 @@ async def process_start_command(message: types.Message):
     1) проверка в базе, авторизирован ли пользователь
     """
     user_tg_id = message.from_user.id
-    if is_auth(user_tg_id):
+    if await is_auth(user_tg_id):
         await MenuState.main.set()
         await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
     else:
