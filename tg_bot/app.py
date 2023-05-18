@@ -1,4 +1,6 @@
 import logging
+import re
+
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from aiogram import Bot, Dispatcher, types
@@ -7,10 +9,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import Settings
 from tg_bot.states import MenuState, AuthState, AdminMenuState, SubscribeSettings, Newsletter
 
-from tg_bot.utils import validate
+from tg_bot.utils import validate, ask_mail, send_code_email
 
 from db.connection import async_session
-
 from db.worker.user_wrk import UserWorker, User
 
 settings = Settings()
@@ -46,6 +47,7 @@ def show_buttons():
 async def process_start_command(message: types.Message):
     """
     1) проверка в базе, авторизирован ли пользователь
+    2) если не авторизирован, то выполняется авторизация через почту
     """
     user_tg_id = message.from_user.id
     if await is_auth(user_tg_id):
@@ -69,10 +71,30 @@ async def process_start_command(message: types.Message, state: FSMContext):
 @dp.message_handler(state=AuthState.waiting_for_email)
 async def process_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['email'] = message.text
-        email = data['email']
-        await message.reply(f"email: {email}")
-        await state.finish()
+        email = message.text
+        code = str(12345)
+        data['email'] = email
+        data['code'] = code
+        if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+            await message.reply(f"Почта не верна, попробуйте снова")
+            return AuthState.waiting_for_email.set()
+        else:
+            send_code_email(email, code)  # отправка кода
+            await message.reply(f"На почту: {email} отправлено письмо с кодом подтверждения.\nВведите код из письма.")
+            return AuthState.waiting_for_code.set()
+
+
+@dp.message_handler(state=AuthState.waiting_for_code)
+async def process_email(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        code = data['code']
+
+        if code == message.text:
+            await message.answer("Авторизация выполнена успешно")
+            await MenuState.main.set()
+            await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+        else:
+            pass
 
 
 @dp.message_handler(state=MenuState.main)
@@ -113,31 +135,6 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
         await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
     else:
         await message.reply('Не верная команда.')
-
-
-# def ask_mail(message: types.Message, state: FSMContext):
-#     context.user_data['mail'] = update.message.text
-#     context.user_data['code'] = generate_code()
-#     if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", context.user_data['mail']) or (
-#             "@niuitmo.ru" not in context.user_data['mail'] and "@itmo.ru" not in context.user_data['mail']):
-#         context.bot.sendMessage(chat_id=update.message.chat_id,
-#                                 text='Почта не верна, попробуйте снова')
-#         return State.ASK_MAIL
-#     else:
-#         send_code_email(context.user_data['mail'], context.user_data['code'])  # отправка кода
-#         context.bot.sendMessage(chat_id=update.message.chat_id,
-#                                 text='На почту: {} отправлен код. Введите его сообщением'.format(
-#                                     context.user_data['mail']))
-#         context.user_data['attempts'] = 0
-#         return State.ASK_CODE
-#
-#
-# def send_code_email(email, code):
-#     smtp_obj = smtplib.SMTP_SSL('smtp.mail.ru', 465)
-#     # smtpObj.debuglevel(True)
-#     smtp_obj.login(mail_login, mail_password)
-#     smtp_obj.sendmail(from_addr=mail_login, to_addrs=[email], msg='Printer code is: {}'.format(code))
-#     smtp_obj.quit()
 
 
 if __name__ == '__main__':
