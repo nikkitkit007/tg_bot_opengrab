@@ -16,6 +16,7 @@ from db.worker.user_wrk import UserWorker
 settings = Settings()
 
 logging.basicConfig(level=logging.WARNING)
+logger = settings.logger
 
 bot = Bot(token=settings.API_TOKEN)
 
@@ -85,11 +86,11 @@ async def main_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=SubscribeSettings.main)
 async def subscribe_settings_menu(message: types.Message, state: FSMContext):
     if message.text == 'Информация о подписке':
-        print(message.text)
+        logger.info(message.text)
     elif message.text == 'Изменить время получения рассылки':
-        print(message.text)
+        logger.info(message.text)
     elif message.text == 'Изменить тариф':
-        print(message.text)
+        logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
         await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
@@ -100,9 +101,9 @@ async def subscribe_settings_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Newsletter.main)
 async def news_letter_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить сейчас рассылку в чат':
-        print(message.text)
+        logger.info(message.text)
     elif message.text == 'Получить сейчас рассылку в на почту':
-        print(message.text)
+        logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
         await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
@@ -136,5 +137,5 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
 
 
 if __name__ == '__main__':
-    logging.info("Start bot app...")
+    logger.info("Start bot app...")
     executor.start_polling(dp, skip_updates=True)
