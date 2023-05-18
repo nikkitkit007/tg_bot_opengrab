@@ -1,5 +1,6 @@
 import logging
 import re
+from random import randint
 
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
@@ -9,7 +10,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import Settings
 from tg_bot.states import MenuState, AuthState, AdminMenuState, SubscribeSettings, Newsletter
 
-from tg_bot.utils import validate, ask_mail, send_code_email
+from tg_bot.utils import validate, send_code_email
 
 from db.connection import async_session
 from db.worker.user_wrk import UserWorker, User
@@ -72,16 +73,19 @@ async def process_start_command(message: types.Message, state: FSMContext):
 async def process_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         email = message.text
-        code = str(12345)
+        code = str(randint(10000, 100000-1))
         data['email'] = email
         data['code'] = code
+        # async with async_session() as session:            # TODO upd mail
+            # await UserWorker.update(session, tg_id=message.from_user.id)
+
         if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
             await message.reply(f"Почта не верна, попробуйте снова")
-            return AuthState.waiting_for_email.set()
+            return await AuthState.waiting_for_email.set()
         else:
             send_code_email(email, code)  # отправка кода
             await message.reply(f"На почту: {email} отправлено письмо с кодом подтверждения.\nВведите код из письма.")
-            return AuthState.waiting_for_code.set()
+            return await AuthState.waiting_for_code.set()
 
 
 @dp.message_handler(state=AuthState.waiting_for_code)

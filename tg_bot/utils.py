@@ -4,6 +4,10 @@ from functools import wraps
 
 from aiogram import types
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from db.connection import async_session
 from db.worker.user_wrk import UserWorker
 
@@ -25,10 +29,11 @@ async def get_user_role(user_tg_id: int):
 
 
 def send_code_email(email, code):
-    smtp_obj = smtplib.SMTP_SSL('smtp.mail.ru', 465)
+    smtp_obj = smtplib.SMTP_SSL(Settings.SMTP_HOST, Settings.SMTP_PORT)
     # smtpObj.debuglevel(True)
     smtp_obj.login(Settings.MAIL_LOGIN, Settings.MAIL_PASSWORD)
-    smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email], msg=f'Ваш код для авторизации в боте: {code}')
+    smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email],
+                      msg=MIMEText(f'Ваш код для авторизации в боте: {code}', 'plain', 'utf-8').as_string())
     smtp_obj.quit()
 
 

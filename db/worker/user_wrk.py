@@ -18,3 +18,7 @@ class UserWorker(User):
             query = query.where(and_(User.mail == mail))
 
         return (await local_session.execute(query)).scalars().all()
+
+    @staticmethod
+    async def update(local_session, tg_id: int = None, mail: str = None):
+        user = select(User).where(User.tg_id == tg_id)
