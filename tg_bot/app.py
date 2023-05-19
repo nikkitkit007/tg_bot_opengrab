@@ -30,11 +30,11 @@ async def is_auth(tg_id: int) -> bool:
     async with async_session() as session:
         user = await UserWorker.get(session, tg_id)
         if not user:
-            user_data = User(tg_id=tg_id, is_admin=False, is_auth=True, role='Author')
+            user_data = User(tg_id=tg_id, is_admin=False, is_auth=False, role='Author')
             await UserWorker.add(session, user_data.dict)
             await session.commit()
             # запуск авторизации через почту #!todo
-            return True
+            return False
     if user[0].is_auth:
         return True
     return False
@@ -76,8 +76,9 @@ async def process_email(message: types.Message, state: FSMContext):
         code = str(randint(10000, 100000-1))
         data['email'] = email
         data['code'] = code
-        # async with async_session() as session:            # TODO upd mail
-            # await UserWorker.update(session, tg_id=message.from_user.id)
+        async with async_session() as session:
+            await UserWorker.update(session, tg_id=message.from_user.id, mail=email)
+            await session.commit()
 
         if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
             await message.reply(f"Почта не верна, попробуйте снова")
@@ -89,11 +90,15 @@ async def process_email(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=AuthState.waiting_for_code)
-async def process_email(message: types.Message, state: FSMContext):
+async def mail_auth(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         code = data['code']
 
         if code == message.text:
+            async with async_session() as session:
+                await UserWorker.update(session, tg_id=message.from_user.id, is_auth=True)
+                await session.commit()
+
             await message.answer("Авторизация выполнена успешно")
             await MenuState.main.set()
             await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)

@@ -20,5 +20,11 @@ class UserWorker(User):
         return (await local_session.execute(query)).scalars().all()
 
     @staticmethod
-    async def update(local_session, tg_id: int = None, mail: str = None):
-        user = select(User).where(User.tg_id == tg_id)
+    async def update(local_session, tg_id: int, mail: str = None, is_auth: bool = None):
+        upd_data = {}
+        if mail:
+            upd_data['mail'] = mail
+        if is_auth:
+            upd_data['is_auth'] = is_auth
+        query = update(User).where(User.tg_id == tg_id).values(upd_data)
+        await local_session.execute(query)
