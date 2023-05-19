@@ -8,7 +8,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import Settings
-from tg_bot.states import MenuState, AuthState, AdminMenuState, SubscribeSettings, Newsletter
+from tg_bot.states import MenuState, AuthState, AdminMenuState, SubscribeSettings, Newsletter, get_keyboard
 
 from tg_bot.utils import validate, send_code_email, Roles
 
@@ -53,7 +53,8 @@ async def process_start_command(message: types.Message):
     user_tg_id = message.from_user.id
     if await is_auth(user_tg_id):
         await MenuState.main.set()
-        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+        await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                    state=MenuState)))
     else:
         await AuthState.waiting_for_email.set()
         await message.answer("Для авторизации необходимо ввести ваш <b>mail</b> с помощью которого вы регистрировались",
@@ -101,7 +102,8 @@ async def mail_auth(message: types.Message, state: FSMContext):
 
             await message.answer("Авторизация выполнена успешно")
             await MenuState.main.set()
-            await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+            await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                        state=MenuState)))
         else:
             pass
 
@@ -130,7 +132,9 @@ async def subscribe_settings_menu(message: types.Message, state: FSMContext):
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
-        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+        await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                    state=MenuState)))
+
     else:
         await message.reply('Не верная команда.')
 
@@ -143,7 +147,8 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
-        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+        await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                    state=MenuState)))
     else:
         await message.reply('Не верная команда.')
 
@@ -151,7 +156,9 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
 @validate(white_role_list=[Roles.admin])
 async def activate_admin_menu(message):
     await AdminMenuState.main.set()
-    await message.answer('Выберите действие:', reply_markup=AdminMenuState.keyboard)
+
+    await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                state=AdminMenuState)))
 
 
 @dp.message_handler(state=AdminMenuState.main)
@@ -162,7 +169,8 @@ async def admin_menu(message: types.Message, state: FSMContext):
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
-        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+        await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                    state=MenuState)))
     else:
         await message.reply('Не верная команда.')
 

@@ -1,5 +1,8 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
+import asyncio
+
+from tg_bot.utils import get_user_role, Roles
 
 
 class AuthState(StatesGroup):
@@ -8,13 +11,26 @@ class AuthState(StatesGroup):
     waiting_for_code = State()
 
 
+async def get_keyboard(user_tg_id: int, state):
+    role = await get_user_role(user_tg_id=user_tg_id)
+    if role == Roles.author and state.base_buttons:
+        state.keyboard.add(*state.base_buttons)
+    elif role == Roles.admin:
+        if state.base_buttons:
+            state.keyboard.add(*state.base_buttons)
+        if state.admin_buttons:
+            state.keyboard.add(*state.admin_buttons)
+    print(state.keyboard)
+    return state.keyboard
+
+
 class MenuState(StatesGroup):
     main = State()
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
     base_buttons = ['Рассылка', 'Подписка']
     admin_buttons = ['Управление клиентами', ]
-    keyboard.add(*(base_buttons+admin_buttons))
 
 
 class AdminMenuState(MenuState):
@@ -23,7 +39,9 @@ class AdminMenuState(MenuState):
     statistics = State()
 
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    base_buttons = ['Получить информацию о пользователе', 'Получить статистику', 'Назад']
+    base_buttons = ['Назад', ]
+    admin_buttons = ['Получить информацию о пользователе', 'Получить статистику', ]
+
     keyboard.add(*base_buttons)
 
 
