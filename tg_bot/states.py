@@ -22,6 +22,10 @@ class AdminMenuState(MenuState):
     user_info = State()
     statistics = State()
 
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    base_buttons = ['Получить информацию о пользователе', 'Получить статистику', 'Назад']
+    keyboard.add(*base_buttons)
+
 
 class SubscribeSettings(StatesGroup):
     main = State()

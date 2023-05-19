@@ -14,6 +14,10 @@ from db.worker.user_wrk import UserWorker
 from config import Settings
 
 
+settings = Settings()
+logger = settings.logger
+
+
 class Roles(NamedTuple):
     author = 'author'
     admin = 'admin'
@@ -22,9 +26,9 @@ class Roles(NamedTuple):
 async def get_user_role(user_tg_id: int):
     async with async_session() as session:
         user = await UserWorker.get(session, user_tg_id)
-        await session.commit()
-    if user[0].is_auth:
-        return user[0].role
+        if user:
+            if user[0].is_auth:
+                return user[0].role
     return
 
 
@@ -44,13 +48,12 @@ def validate(white_role_list: List[Roles] = None, black_role_list: List[Roles] =
             if message.from_user:
                 tg_id = message.from_user.id
                 role = await get_user_role(user_tg_id=tg_id)
+                logger.info(f"user role: {role}")
+
                 if role:
                     if role in white_role_list and role not in black_role_list:
                         return await func(message, *args, **kwargs)
                 await message.answer("Вы не имеете прав для совершения этого действия")
-
-            # Если пользователь не имеет правильных ролей, можно выполнить дополнительные действия
-            # Например, отправить сообщение об ошибке или проигнорировать запрос
 
         return wrapper
 

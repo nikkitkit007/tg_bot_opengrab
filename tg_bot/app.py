@@ -10,7 +10,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import Settings
 from tg_bot.states import MenuState, AuthState, AdminMenuState, SubscribeSettings, Newsletter
 
-from tg_bot.utils import validate, send_code_email
+from tg_bot.utils import validate, send_code_email, Roles
 
 from db.connection import async_session
 from db.worker.user_wrk import UserWorker, User
@@ -30,7 +30,7 @@ async def is_auth(tg_id: int) -> bool:
     async with async_session() as session:
         user = await UserWorker.get(session, tg_id)
         if not user:
-            user_data = User(tg_id=tg_id, is_admin=False, is_auth=False, role='Author')
+            user_data = User(tg_id=tg_id, is_admin=False, is_auth=False, role=Roles.author)
             await UserWorker.add(session, user_data.dict)
             await session.commit()
             # запуск авторизации через почту #!todo
@@ -114,6 +114,8 @@ async def main_menu(message: types.Message, state: FSMContext):
     elif message.text == 'Подписка':
         await SubscribeSettings.main.set()
         await message.answer('Выберите действие:', reply_markup=SubscribeSettings.keyboard)
+    elif message.text == 'Управление клиентами':
+        await activate_admin_menu(message)
     else:
         await message.reply('Не верная команда.')
 
@@ -138,6 +140,25 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить сейчас рассылку в чат':
         logger.info(message.text)
     elif message.text == 'Получить сейчас рассылку в на почту':
+        logger.info(message.text)
+    elif message.text == 'Назад':
+        await MenuState.main.set()
+        await message.answer('Выберите действие:', reply_markup=MenuState.keyboard)
+    else:
+        await message.reply('Не верная команда.')
+
+
+@validate(white_role_list=[Roles.admin])
+async def activate_admin_menu(message):
+    await AdminMenuState.main.set()
+    await message.answer('Выберите действие:', reply_markup=AdminMenuState.keyboard)
+
+
+@dp.message_handler(state=AdminMenuState.main)
+async def admin_menu(message: types.Message, state: FSMContext):
+    if message.text == 'Получить информацию о пользователе':
+        logger.info(message.text)
+    elif message.text == 'Получить статистику':
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
