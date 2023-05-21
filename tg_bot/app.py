@@ -6,6 +6,7 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
+
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import Settings
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
@@ -34,19 +35,13 @@ async def is_auth(tg_id: int) -> bool:
             user_data = User(tg_id=tg_id, is_auth=False, role=Roles.author)
             await UserWorker.add(session, user_data.dict)
             await session.commit()
-            # запуск авторизации через почту #!todo
             return False
     if user[0].is_auth:
         return True
     return False
 
 
-def show_buttons():
-    pass
-
-
-@dp.message_handler(commands=['start'])
-async def process_start_command(message: types.Message):
+async def auth(message: types.Message):
     """
     1) проверка в базе, авторизирован ли пользователь
     2) если не авторизирован, то выполняется авторизация через почту
@@ -60,6 +55,16 @@ async def process_start_command(message: types.Message):
         await AuthState.waiting_for_email.set()
         await message.answer("Для авторизации необходимо ввести ваш <b>mail</b> с помощью которого вы регистрировались",
                              parse_mode='HTML')
+
+
+@dp.message_handler(commands=['start'])
+async def process_start_command(message: types.Message):
+    await auth(message)
+
+
+@dp.message_handler(content_types=types.ContentTypes.TEXT)
+async def handle_text(message: types.Message):
+    await auth(message)
 
 
 @dp.message_handler(commands=['help'])
@@ -135,7 +140,6 @@ async def subscribe_settings_menu(message: types.Message, state: FSMContext):
         await MenuState.main.set()
         await message.answer(MenuState.text_main, reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
                                                                                    state=MenuState)))
-
     else:
         await message.reply('Не верная команда.')
 
