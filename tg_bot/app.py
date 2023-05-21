@@ -8,7 +8,8 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import Settings
-from tg_bot.states import MenuState, AuthState, AdminMenuState, SubscribeSettings, Newsletter, get_keyboard
+from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
+                           Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
 from tg_bot.utils import validate, send_code_email, Roles
 
@@ -116,7 +117,7 @@ async def main_menu(message: types.Message, state: FSMContext):
     elif message.text == 'Подписка':
         await SubscribeSettings.main.set()
         await message.answer('Выберите действие:', reply_markup=SubscribeSettings.keyboard)
-    elif message.text == 'Управление клиентами':
+    elif message.text == 'Меню администратора':
         await activate_admin_menu(message)
     else:
         await message.reply('Не верная команда.')
@@ -163,14 +164,42 @@ async def activate_admin_menu(message):
 
 @dp.message_handler(state=AdminMenuState.main)
 async def admin_menu(message: types.Message, state: FSMContext):
+    if message.text == 'Управление клиентами':
+        await AdminUserControlState.main.set()
+        await message.answer('Выберите действие:', reply_markup=AdminUserControlState.keyboard)
+    elif message.text == 'Системные настройки':
+        await AdminSettingsState.main.set()
+        await message.answer('Выберите действие:', reply_markup=AdminSettingsState.keyboard)
+    elif message.text == 'Назад':
+        await MenuState.main.set()
+        await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
+                                                                                    state=MenuState)))
+    else:
+        await message.reply('Не верная команда.')
+
+
+@dp.message_handler(state=AdminUserControlState.main)
+async def admin_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить информацию о пользователе':
         logger.info(message.text)
     elif message.text == 'Получить статистику':
         logger.info(message.text)
     elif message.text == 'Назад':
-        await MenuState.main.set()
-        await message.answer('Выберите действие:', reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
-                                                                                    state=MenuState)))
+        await AdminMenuState.main.set()
+        await message.answer('Выберите действие:', reply_markup=AdminMenuState.keyboard)
+    else:
+        await message.reply('Не верная команда.')
+
+
+@dp.message_handler(state=AdminSettingsState.main)
+async def admin_menu(message: types.Message, state: FSMContext):
+    if message.text == 'Состояние почтового сервиса':
+        logger.info(message.text)
+    elif message.text == 'Состояние бэкенда':
+        logger.info(message.text)
+    elif message.text == 'Назад':
+        await AdminMenuState.main.set()
+        await message.answer('Выберите действие:', reply_markup=AdminMenuState.keyboard)
     else:
         await message.reply('Не верная команда.')
 

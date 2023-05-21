@@ -35,10 +35,20 @@ class MenuState(StatesGroup):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     base_buttons = ['Рассылка', 'Подписка']
-    admin_buttons = ['Управление клиентами', ]
+    admin_buttons = ['Меню администратора']
 
 
 class AdminMenuState(MenuState):
+    main = State()
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    base_buttons = ['Назад', ]
+    admin_buttons = ['Управление клиентами', 'Системные настройки']
+
+    keyboard.add(*base_buttons)
+
+
+class AdminUserControlState(MenuState):
     main = State()
     user_info = State()
     statistics = State()
@@ -47,6 +57,18 @@ class AdminMenuState(MenuState):
     base_buttons = ['Назад', ]
     admin_buttons = ['Получить информацию о пользователе', 'Получить статистику', ]
 
+    keyboard.add(*admin_buttons)
+    keyboard.add(*base_buttons)
+
+
+class AdminSettingsState(MenuState):
+    main = State()
+
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    base_buttons = ['Назад', ]
+    admin_buttons = ['Состояние почтового сервиса', 'Состояние бэкенда', ]
+
+    keyboard.add(*admin_buttons)
     keyboard.add(*base_buttons)
 
 
