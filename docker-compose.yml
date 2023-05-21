@@ -20,4 +20,13 @@ services:
     build: .
     command: [ "python", "-u", "main.py" ]
     restart: always
-    network_mode: host
+    environment:
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=db
+      - POSTGRES_NAME=${POSTGRES_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - MAIL_LOGIN=${MAIL_LOGIN}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}

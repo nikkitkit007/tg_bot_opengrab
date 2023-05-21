@@ -30,7 +30,7 @@ async def is_auth(tg_id: int) -> bool:
     async with async_session() as session:
         user = await UserWorker.get(session, tg_id)
         if not user:
-            user_data = User(tg_id=tg_id, is_admin=False, is_auth=False, role=Roles.author)
+            user_data = User(tg_id=tg_id, is_auth=False, role=Roles.author)
             await UserWorker.add(session, user_data.dict)
             await session.commit()
             # запуск авторизации через почту #!todo

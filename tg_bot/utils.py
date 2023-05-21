@@ -41,7 +41,7 @@ def send_code_email(email, code):
     smtp_obj.quit()
 
 
-def validate(white_role_list: List[Roles] = None, black_role_list: List[Roles] = None):
+def validate(white_role_list: List[Roles] = [], black_role_list: List[Roles] = []):
     def decorator(func):
         @wraps(func)
         async def wrapper(message: types.Message, *args, **kwargs):
