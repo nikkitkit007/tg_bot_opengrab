@@ -5,11 +5,12 @@ from functools import wraps
 from aiogram import types
 
 import smtplib
-from email.mime.multipart import MIMEMultipart
+# from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import requests
 
-from db.connection import async_session
-from db.worker.user_wrk import UserWorker
+# from db.connection import async_session
+# from db.worker.user_wrk import UserWorker
 
 from config import Settings
 
@@ -25,12 +26,12 @@ class Roles(NamedTuple):
 
 async def get_user_role(user_tg_id: int):
     # todo - заменить на запрос к бэку php
-    async with async_session() as session:
-        user = await UserWorker.get(session, user_tg_id)
-        if user:
-            if user[0].is_auth:
-                return user[0].role
-    return
+    # async with async_session() as session:
+    #     user = await UserWorker.get(session, user_tg_id)
+    #     if user:
+    #         if user[0].is_auth:
+    #             return user[0].role
+    return Roles.admin
 
 
 def send_code_email(email, code):
@@ -40,6 +41,22 @@ def send_code_email(email, code):
     smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email],
                       msg=MIMEText(f'Ваш код для авторизации в OpenGrab-боте: {code}', 'plain', 'utf-8').as_string())
     smtp_obj.quit()
+
+
+def is_mail_exist(email):
+    # params = dict(email="jeff.ebrilo@gmail.com")
+    # todo need 404 if user not found
+    params = dict(email=email)
+    url = "https://api.opengrab.ru/v1/user"
+    res = requests.get(url=url, params=params)
+    if res.status_code != 200:
+        logger.info(res.content)
+        return False
+    elif res.status_code == 200 and res.json().get('result', {}).get('id') and res.json().get('result', {}).get('is'):
+        return True
+    else:
+        logger.info(res.content)
+        return False
 
 
 def validate(white_role_list: List[Roles] = [], black_role_list: List[Roles] = []):

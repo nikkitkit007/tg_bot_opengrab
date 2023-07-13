@@ -12,10 +12,10 @@ from config import Settings
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
                            Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
-from tg_bot.utils import validate, send_code_email, Roles
+from tg_bot.utils import validate, send_code_email, Roles, is_mail_exist
 
-from db.connection import async_session
-from db.worker.user_wrk import UserWorker, User
+# from db.connection import async_session
+# from db.worker.user_wrk import UserWorker, User
 
 settings = Settings()
 
@@ -29,15 +29,17 @@ dp.middleware.setup(LoggingMiddleware())
 
 
 async def is_auth(tg_id: int) -> bool:
-    async with async_session() as session:
-        user = await UserWorker.get(session, tg_id)
-        if not user:
-            user_data = User(tg_id=tg_id, is_auth=False, role=Roles.author)
-            await UserWorker.add(session, user_data.dict)
-            await session.commit()
-            return False
-    if user[0].is_auth:
-        return True
+    # ! todo GET
+
+    # async with async_session() as session:
+    #     user = await UserWorker.get(session, tg_id)
+    #     if not user:
+    #         user_data = User(tg_id=tg_id, is_auth=False, role=Roles.author)
+    #         await UserWorker.add(session, user_data.dict)
+    #         await session.commit()
+    #         return False
+    # if user[0].is_auth:
+    #     return True
     return False
 
 
@@ -83,11 +85,11 @@ async def process_email(message: types.Message, state: FSMContext):
         code = str(randint(10000, 100000 - 1))
         data['email'] = email
         data['code'] = code
-        async with async_session() as session:
-            await UserWorker.update(session, tg_id=message.from_user.id, mail=email)
-            await session.commit()
+        # async with async_session() as session:
+        #     await UserWorker.update(session, tg_id=message.from_user.id, mail=email)
+        #     await session.commit()
 
-        if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
+        if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email) or not is_mail_exist(email):
             await message.reply(f"Почта не верна, попробуйте снова")
             return await AuthState.waiting_for_email.set()
         else:
@@ -102,9 +104,9 @@ async def mail_auth(message: types.Message, state: FSMContext):
         code = data['code']
 
         if code == message.text:
-            async with async_session() as session:
-                await UserWorker.update(session, tg_id=message.from_user.id, is_auth=True)
-                await session.commit()
+            # async with async_session() as session:
+            #     await UserWorker.update(session, tg_id=message.from_user.id, is_auth=True)
+            #     await session.commit()
 
             await message.answer("Авторизация выполнена успешно")
             await MenuState.main.set()

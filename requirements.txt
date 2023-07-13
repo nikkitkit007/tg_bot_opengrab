@@ -3,3 +3,4 @@ python-dotenv~=1.0.0
 asyncpg
 SQLAlchemy~=2.0.12
 secure-smtplib
+requests~=2.31.0
