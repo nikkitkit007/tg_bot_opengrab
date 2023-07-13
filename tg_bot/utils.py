@@ -24,6 +24,7 @@ class Roles(NamedTuple):
 
 
 async def get_user_role(user_tg_id: int):
+    # todo - заменить на запрос к бэку php
     async with async_session() as session:
         user = await UserWorker.get(session, user_tg_id)
         if user:
@@ -37,7 +38,7 @@ def send_code_email(email, code):
     # smtpObj.debuglevel(True)
     smtp_obj.login(Settings.MAIL_LOGIN, Settings.MAIL_PASSWORD)
     smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email],
-                      msg=MIMEText(f'Ваш код для авторизации в боте: {code}', 'plain', 'utf-8').as_string())
+                      msg=MIMEText(f'Ваш код для авторизации в OpenGrab-боте: {code}', 'plain', 'utf-8').as_string())
     smtp_obj.quit()
 
 
