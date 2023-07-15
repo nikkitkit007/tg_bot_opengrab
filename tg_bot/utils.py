@@ -26,6 +26,8 @@ class Roles(NamedTuple):
 
 async def get_user_role(user_tg_id: int):
     # todo - заменить на запрос к бэку php
+    # same as in auth
+
     # async with async_session() as session:
     #     user = await UserWorker.get(session, user_tg_id)
     #     if user:

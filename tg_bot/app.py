@@ -29,7 +29,13 @@ dp.middleware.setup(LoggingMiddleware())
 
 
 async def is_auth(tg_id: int) -> bool:
-    # ! todo GET
+    """
+    ! todo GET
+    request:
+        params: tg_id
+    response:
+        data: all info
+    """
 
     # async with async_session() as session:
     #     user = await UserWorker.get(session, tg_id)
