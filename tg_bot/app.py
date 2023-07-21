@@ -12,7 +12,7 @@ from config import Settings
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
                            Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
-from tg_bot.utils import validate, send_code_email, Roles, is_mail_exist
+from tg_bot.utils import validate, send_code_email, Roles, is_mail_exist, get_user_role
 
 # from db.connection import async_session
 # from db.worker.user_wrk import UserWorker, User
@@ -36,16 +36,8 @@ async def is_auth(tg_id: int) -> bool:
     response:
         data: all info
     """
-
-    # async with async_session() as session:
-    #     user = await UserWorker.get(session, tg_id)
-    #     if not user:
-    #         user_data = User(tg_id=tg_id, is_auth=False, role=Roles.author)
-    #         await UserWorker.add(session, user_data.dict)
-    #         await session.commit()
-    #         return False
-    # if user[0].is_auth:
-    #     return True
+    if res := await get_user_role(user_tg_id=tg_id):
+        return True
     return False
 
 
@@ -110,9 +102,12 @@ async def mail_auth(message: types.Message, state: FSMContext):
         code = data['code']
 
         if code == message.text:
-            # async with async_session() as session:
-            #     await UserWorker.update(session, tg_id=message.from_user.id, is_auth=True)
-            #     await session.commit()
+            # set tg id
+            """
+            - PUT /user
+ в поле data передаю:
+ - почту по которой будем обновлять запись о пользователе, - tg_id, который будет добавлен в запись о пользователе
+            """
 
             await message.answer("Авторизация выполнена успешно")
             await MenuState.main.set()

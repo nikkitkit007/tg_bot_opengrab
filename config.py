@@ -62,5 +62,5 @@ class Settings:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.mail.ru')
     SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
-
+    SMTP_DEBUG = False
     logger = logging.getLogger('info_logger')
