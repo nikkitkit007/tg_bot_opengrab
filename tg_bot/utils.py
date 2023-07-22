@@ -41,8 +41,8 @@ async def get_user_role(user_tg_id: int) -> Union[str, None]:
     if res.status_code != 200:
         logger.info(res.content)
         return
-    elif res.status_code == 200 and res.json().get('result', {}).get('id') and res.json().get('result', {}).get('is'):
-        return res.json()['result']['is']
+    elif res.status_code == 200 and res.json().get('result', [{}])[0].get('id') and res.json().get('result', [{}])[0].get('is'):
+        return res.json()['result'][0]['is']
     else:
         logger.info(res.content)
         return
