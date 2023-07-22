@@ -27,7 +27,8 @@ class AuthState(StatesGroup):
 async def get_keyboard(user_tg_id: int, state):
     state.keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     role = await get_user_role(user_tg_id=user_tg_id)
-    if role == Roles.author and state.base_buttons:
+    # if role == Roles.author and state.base_buttons:
+    if role:
         state.keyboard.add(*state.base_buttons)
     elif role == Roles.admin:
         if state.admin_buttons:
