@@ -128,10 +128,13 @@ async def main_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=SubscribeSettings.main)
 async def subscribe_settings_menu(message: types.Message, state: FSMContext):
     if message.text == 'Информация о подписке':
+        await message.reply('GET api/subscribe/info')
         logger.info(message.text)
     elif message.text == 'Изменить время получения рассылки':
+        await message.reply('PUT api/subscribe/settings')
         logger.info(message.text)
     elif message.text == 'Изменить тариф':
+        await message.reply('PUT api/subscribe/tariff')
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
@@ -144,8 +147,10 @@ async def subscribe_settings_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Newsletter.main)
 async def news_letter_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить сейчас рассылку в чат':
+        await message.reply('GET api/.../')
         logger.info(message.text)
     elif message.text == 'Получить сейчас рассылку в на почту':
+        await message.reply('GET api/.../mail')
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
@@ -179,7 +184,7 @@ async def admin_menu(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=AdminUserControlState.main)
-async def admin_menu(message: types.Message, state: FSMContext):
+async def admin_control(message: types.Message, state: FSMContext):
     if message.text == 'Получить информацию о пользователе':
         logger.info(message.text)
     elif message.text == 'Получить статистику':
@@ -192,7 +197,7 @@ async def admin_menu(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=AdminSettingsState.main)
-async def admin_menu(message: types.Message, state: FSMContext):
+async def admin_settings(message: types.Message, state: FSMContext):
     if message.text == 'Состояние почтового сервиса':
         logger.info(message.text)
     elif message.text == 'Состояние бэкенда':
