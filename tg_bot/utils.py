@@ -4,7 +4,7 @@ from functools import wraps
 from aiogram import types
 
 import smtplib
-# from email.mime.multipart import MIMEMultipart
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import requests
 
@@ -21,6 +21,7 @@ logger = settings.logger
 class Roles(NamedTuple):
     author = 'author'
     admin = 'admin'
+    client = 'client'
 
 
 async def set_user_tg(mail: str, tg_id: int):
@@ -52,8 +53,15 @@ def send_code_email(email, code):
     smtp_obj = smtplib.SMTP_SSL(Settings.SMTP_HOST, Settings.SMTP_PORT)
     smtp_obj.set_debuglevel(Settings.SMTP_DEBUG)
     smtp_obj.login(Settings.MAIL_LOGIN, Settings.MAIL_PASSWORD)
-    smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email],
-                      msg=MIMEText(f'Ваш код для авторизации в OpenGrab-боте: {code}', 'plain', 'utf-8').as_string())
+
+    msg = MIMEMultipart()
+    msg['From'] = Settings.MAIL_LOGIN
+    msg['To'] = email
+    msg['Subject'] = 'Авторизация в ТГ боте'
+    message_text = f'Ваш код для авторизации в OpenGrab-боте: {code}'
+    msg.attach(MIMEText(message_text, 'plain', 'utf-8'))
+
+    smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email], msg=msg.as_string())
     smtp_obj.quit()
 
 

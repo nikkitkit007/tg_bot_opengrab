@@ -28,8 +28,9 @@ async def get_keyboard(user_tg_id: int, state):
     state.keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     role = await get_user_role(user_tg_id=user_tg_id)
     # if role == Roles.author and state.base_buttons:
-    if role:
+    if role == Roles.client:
         state.keyboard.add(*state.base_buttons)
+        state.keyboard.add(*state.admin_buttons)        # todo del from here
     elif role == Roles.admin:
         if state.admin_buttons:
             state.keyboard.add(*state.admin_buttons)

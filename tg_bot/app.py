@@ -160,7 +160,7 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
         await message.reply('Не верная команда.')
 
 
-@validate(white_role_list=[Roles.admin])
+@validate(white_role_list=[Roles.admin, Roles.client])      # todo del client
 async def activate_admin_menu(message):
     await AdminMenuState.main.set()
     await message.answer(MenuState.text_main, reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
