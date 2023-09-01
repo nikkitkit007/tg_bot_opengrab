@@ -13,7 +13,6 @@ import requests
 
 from config import Settings
 
-
 settings = Settings()
 logger = settings.logger
 
@@ -42,8 +41,24 @@ async def get_user_role(user_tg_id: int) -> Union[str, None]:
     if res.status_code != 200:
         logger.info(res.content)
         return
-    elif res.status_code == 200 and res.json().get('result', [{}])[0].get('id') and res.json().get('result', [{}])[0].get('is'):
+    elif res.status_code == 200 and res.json().get('result', [{}])[0].get('id') and res.json().get('result', [{}])[
+        0].get('is'):
         return res.json()['result'][0]['is']
+    else:
+        logger.info(res.content)
+        return
+
+
+async def get_user_mail(user_tg_id: int):
+    params = dict(tg_id=user_tg_id)
+    url = "https://api.opengrab.ru/v10/user"
+    res = requests.get(url=url, params=params)
+    if res.status_code != 200:
+        logger.info(res.content)
+        return
+    elif (res.status_code == 200 and res.json().get('result', [{}])[0].get('id')
+          and res.json().get('result', [{}])[0].get('is')):
+        return res.json()['result'][0]['name']
     else:
         logger.info(res.content)
         return
@@ -65,6 +80,22 @@ def send_code_email(email, code):
     smtp_obj.quit()
 
 
+def send_news_letter(email, news_letter):
+    smtp_obj = smtplib.SMTP_SSL(Settings.SMTP_HOST, Settings.SMTP_PORT)
+    smtp_obj.set_debuglevel(Settings.SMTP_DEBUG)
+    smtp_obj.login(Settings.MAIL_LOGIN, Settings.MAIL_PASSWORD)
+
+    msg = MIMEMultipart()
+    msg['From'] = Settings.MAIL_LOGIN
+    msg['To'] = email
+    msg['Subject'] = 'Авторизация в ТГ боте'
+    message_text = f'Рассылка по вашему запросу:\n{news_letter}'
+    msg.attach(MIMEText(message_text, 'plain', 'utf-8'))
+
+    smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email], msg=msg.as_string())
+    smtp_obj.quit()
+
+
 def is_mail_exist(email):
     # params = dict(email="jeff.ebrilo@gmail.com")
     # todo need 404 if user not found
@@ -74,7 +105,8 @@ def is_mail_exist(email):
     if res.status_code != 200:
         logger.info(res.content)
         return False
-    elif res.status_code == 200 and res.json().get('result', [{}])[0].get('id') and res.json().get('result', [{}])[0].get('is'):
+    elif res.status_code == 200 and res.json().get('result', [{}])[0].get('id') and res.json().get('result', [{}])[
+        0].get('is'):
         return True
     else:
         logger.info(res.content)

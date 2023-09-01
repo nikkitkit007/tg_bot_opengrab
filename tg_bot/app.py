@@ -1,6 +1,7 @@
 import logging
 import re
 from random import randint
+import requests
 
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
@@ -12,7 +13,8 @@ from config import Settings
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
                            Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
-from tg_bot.utils import validate, send_code_email, Roles, is_mail_exist, get_user_role, set_user_tg
+from tg_bot.utils import (validate, send_code_email, Roles, is_mail_exist, get_user_role, set_user_tg, send_news_letter,
+                          get_user_mail)
 
 # from db.connection import async_session
 # from db.worker.user_wrk import UserWorker, User
@@ -29,13 +31,6 @@ dp.middleware.setup(LoggingMiddleware())
 
 
 async def is_auth(tg_id: int) -> bool:
-    """
-    ! todo GET
-    request:
-        params: tg_id
-    response:
-        data: all info
-    """
     if res := await get_user_role(user_tg_id=tg_id):
         return True
     return False
@@ -147,10 +142,35 @@ async def subscribe_settings_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Newsletter.main)
 async def news_letter_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить сейчас рассылку в чат':
-        await message.reply('GET api/.../')
+        """
+        https://api.opengrab.ru/v10/results?tg_id=1302431850
+        """
+        params = dict(tg_id=message.from_user.id)
+        # params = dict(tg_id='1302431850')
+        url = "https://api.opengrab.ru/v10/results"
+        res = requests.get(url=url, params=params)
+        if res and res.status_code == 200:
+            data = res.json()['result']['0']
+            if (count_data := len(data)) > 10:
+                await message.reply(f"Число записей: {count_data}")
+                await message.answer(data[:10])
+                await message.answer("Для получения всех записей, выполните запрос на почту")
+            else:
+                await message.reply(data[:10])
+        else:
+            await message.reply('Сервис получения рассылки временно недоступен')
         logger.info(message.text)
     elif message.text == 'Получить сейчас рассылку в на почту':
-        await message.reply('GET api/.../mail')
+        params = dict(tg_id=message.from_user.id)
+        url = "https://api.opengrab.ru/v10/results"
+        res = requests.get(url=url, params=params)
+        if res and res.status_code == 200:
+            data = res.json()['result']['0']
+            user_mail = await get_user_mail(message.from_user.id)
+            print(f'Sent news_letter on mail: {user_mail}')
+            send_news_letter(user_mail, data)
+        else:
+            await message.reply('Сервис получения рассылки временно недоступен')
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
