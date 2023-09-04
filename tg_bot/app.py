@@ -13,11 +13,9 @@ from config import Settings
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
                            Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
-from tg_bot.utils import (validate, send_code_email, Roles, is_mail_exist, get_user_role, set_user_tg, send_news_letter,
+from tg_bot.utils import (validate, send_code_email, is_mail_exist, get_user_role, set_user_tg, send_news_letter,
                           get_user_mail)
-
-# from db.connection import async_session
-# from db.worker.user_wrk import UserWorker, User
+from tg_bot.schema import Roles
 
 settings = Settings()
 

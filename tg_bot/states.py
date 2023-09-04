@@ -2,7 +2,8 @@ from typing import NamedTuple
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram import types
 
-from tg_bot.utils import get_user_role, Roles
+from tg_bot.utils import get_user_role
+from tg_bot.schema import Roles
 from config import Settings
 
 

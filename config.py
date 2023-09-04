@@ -64,3 +64,5 @@ class Settings:
     SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
     SMTP_DEBUG = False
     logger = logging.getLogger('info_logger')
+
+    OPENGRAB_URL = 'https://api.opengrab.ru/v10'
