@@ -98,7 +98,7 @@ def send_news_letter_email(email, news_letter):
     send_email(email, subject, message, csv_data=convert_dict_to_csv(news_letter))
 
 
-async def get_news_letter(tg_id: int):
+async def get_news_letter(tg_id: int) -> dict:
     """
     https://api.opengrab.ru/v10/results?tg_id=1302431850
     """
@@ -109,7 +109,7 @@ async def get_news_letter(tg_id: int):
     if res and res.status_code == 200:
         return res.json()['result']['0']
     else:
-        return False
+        return {}
 
 
 def is_mail_exist(email):

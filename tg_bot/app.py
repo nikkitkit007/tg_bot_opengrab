@@ -1,7 +1,6 @@
 import logging
 import re
 from random import randint
-import requests
 
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor

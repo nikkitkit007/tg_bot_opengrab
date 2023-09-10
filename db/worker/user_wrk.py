@@ -28,3 +28,9 @@ class UserWorker(User):
             upd_data['is_auth'] = is_auth
         query = update(User).where(User.tg_id == tg_id).values(upd_data)
         await local_session.execute(query)
+
+    @staticmethod
+    async def set_state(local_session, tg_id: int, state: str):
+        upd_data = {state: state}
+        query = update(User).where(User.tg_id == tg_id).values(upd_data)
+        await local_session.execute(query)
