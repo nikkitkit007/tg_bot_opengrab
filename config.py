@@ -63,7 +63,7 @@ class Settings(BaseModel):
     MAIL_LOGIN: str = os.getenv('MAIL_LOGIN')
     MAIL_PASSWORD: str = os.getenv('MAIL_PASSWORD')
     SMTP_HOST: str = os.getenv('SMTP_HOST', 'smtp.mail.ru')
-    SMTP_PORT: int = int(os.getenv('SMTP_PORT', '465'))
+    SMTP_PORT: int = int(os.getenv('SMTP_PORT', 465))
     SMTP_DEBUG: bool = False
 
     OPENGRAB_URL: str = 'https://api.opengrab.ru/v10'
