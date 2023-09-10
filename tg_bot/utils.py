@@ -8,11 +8,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import requests
 
-from config import Settings
+from config import settings, logger
 from tg_bot.schema import Roles
-
-settings = Settings()
-logger = settings.logger
 
 
 async def set_user_tg(mail: str, tg_id: int):
@@ -57,18 +54,18 @@ async def get_user_mail(user_tg_id: int):
 
 
 def send_email(email, subject, message):
-    smtp_obj = smtplib.SMTP_SSL(Settings.SMTP_HOST, Settings.SMTP_PORT)
-    smtp_obj.set_debuglevel(Settings.SMTP_DEBUG)
-    smtp_obj.login(Settings.MAIL_LOGIN, Settings.MAIL_PASSWORD)
+    smtp_obj = smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT)
+    smtp_obj.set_debuglevel(settings.SMTP_DEBUG)
+    smtp_obj.login(settings.MAIL_LOGIN, settings.MAIL_PASSWORD)
 
     msg = MIMEMultipart()
-    msg['From'] = Settings.MAIL_LOGIN
+    msg['From'] = settings.MAIL_LOGIN
     msg['To'] = email
     msg['Subject'] = subject
     message_text = message
     msg.attach(MIMEText(message_text, 'plain', 'utf-8'))
 
-    smtp_obj.sendmail(from_addr=Settings.MAIL_LOGIN, to_addrs=[email], msg=msg.as_string())
+    smtp_obj.sendmail(from_addr=settings.MAIL_LOGIN, to_addrs=[email], msg=msg.as_string())
     smtp_obj.quit()
 
 

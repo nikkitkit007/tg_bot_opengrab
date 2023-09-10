@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import logging.config
 import os
+from pydantic import BaseModel
+
 
 load_dotenv()
 
@@ -46,23 +48,27 @@ LOGGING_CONFIG = {
 logging.config.dictConfig(LOGGING_CONFIG)
 
 
-class Settings:
-    API_TOKEN = os.getenv('API_TOKEN')
+class Settings(BaseModel):
+    API_TOKEN: str = os.getenv('API_TOKEN')
 
-    DB_HOST = os.getenv('POSTGRES_HOST')
-    DB_PORT = os.getenv('POSTGRES_PORT')
-    DB_NAME = os.getenv('POSTGRES_NAME')
-    DB_USER = os.getenv('POSTGRES_USER')
-    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+    DB_HOST: str = os.getenv('POSTGRES_HOST')
+    DB_PORT: int = int(os.getenv('POSTGRES_PORT', 5432))
+    DB_NAME: str = os.getenv('POSTGRES_NAME')
+    DB_USER: str = os.getenv('POSTGRES_USER')
+    DB_PASSWORD: str = os.getenv('POSTGRES_PASSWORD')
 
-    DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    DB_ECHO = False
+    DB_URL: str = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DB_ECHO: bool = False
 
-    MAIL_LOGIN = os.getenv('MAIL_LOGIN')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    SMTP_HOST = os.getenv('SMTP_HOST', 'smtp.mail.ru')
-    SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
-    SMTP_DEBUG = False
-    logger = logging.getLogger('info_logger')
+    MAIL_LOGIN: str = os.getenv('MAIL_LOGIN')
+    MAIL_PASSWORD: str = os.getenv('MAIL_PASSWORD')
+    SMTP_HOST: str = os.getenv('SMTP_HOST', 'smtp.mail.ru')
+    SMTP_PORT: int = int(os.getenv('SMTP_PORT', '465'))
+    SMTP_DEBUG: bool = False
 
-    OPENGRAB_URL = 'https://api.opengrab.ru/v10'
+    OPENGRAB_URL: str = 'https://api.opengrab.ru/v10'
+
+
+logger = logging.getLogger('info_logger')
+
+settings = Settings()

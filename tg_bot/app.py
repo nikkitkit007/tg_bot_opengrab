@@ -9,7 +9,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from config import Settings
+from config import settings, logger
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
                            Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
@@ -17,10 +17,8 @@ from tg_bot.utils import (validate, send_code_email, is_mail_exist, get_user_rol
                           get_user_mail)
 from tg_bot.schema import Roles
 
-settings = Settings()
 
 logging.basicConfig(level=logging.WARNING)
-logger = settings.logger
 
 bot = Bot(token=settings.API_TOKEN)
 
