@@ -137,26 +137,24 @@ async def subscribe_settings_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Newsletter.main)
 async def news_letter_menu(message: types.Message, state: FSMContext):
     if message.text == 'Получить сейчас рассылку в чат':
-        """
-        https://api.opengrab.ru/v10/results?tg_id=1302431850
-        """
         if news_letter := await get_news_letter(message.from_user.id):
             if (count_data := len(news_letter)) > 10:
-                await message.reply(f"Число записей: {count_data}")
+                await message.answer(f"Число записей: {count_data}")
                 await message.answer(news_letter[:10])
                 await message.answer("Для получения всех записей, выполните запрос на почту")
+            elif count_data == 0:
+                await message.answer("Эфиров за выбранный период не было")
             else:
-                await message.reply(news_letter[:10])
+                await message.answer(news_letter[:10])
         else:
-            await message.reply('Сервис получения рассылки временно недоступен')
-        logger.info(message.text)
+            await message.answer('Сервис получения рассылки временно недоступен')
     elif message.text == 'Получить сейчас рассылку в на почту':
         if news_letter := await get_news_letter(message.from_user.id):
             user_mail = await get_user_mail(message.from_user.id)
             logger.info(f'Sent news_letter on mail: {user_mail}')
             send_news_letter_email(user_mail, news_letter)
         else:
-            await message.reply('Сервис получения рассылки временно недоступен')
+            await message.answer('Сервис получения рассылки временно недоступен')
         logger.info(message.text)
     elif message.text == 'Назад':
         await MenuState.main.set()
@@ -166,7 +164,7 @@ async def news_letter_menu(message: types.Message, state: FSMContext):
         await message.reply('Не верная команда.')
 
 
-@validate(white_role_list=[Roles.admin, Roles.client])      # todo del client
+@validate(white_role_list=[Roles.admin, Roles.client])
 async def activate_admin_menu(message):
     await AdminMenuState.main.set()
     await message.answer(MenuState.text_main, reply_markup=(await get_keyboard(user_tg_id=message.from_user.id,
@@ -218,6 +216,11 @@ async def admin_settings(message: types.Message, state: FSMContext):
 async def scheduler():
     logger.info('Start scheduler...')
     while True:
+        """
+        1) get users list
+        2) if time: -> sent message
+        """
+        print('get users list...')
         await asyncio.sleep(60)
 
 

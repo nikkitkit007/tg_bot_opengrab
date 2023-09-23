@@ -1,12 +1,17 @@
-import asyncio
-from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import declarative_base, sessionmaker
-from config import settings
+import subprocess
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+
+from config import settings, ASYNC_DB_URL, SYNC_DB_URL
 
 
-metadata = MetaData()
-Base = declarative_base(metadata=metadata)
+async_engine = create_async_engine(ASYNC_DB_URL, pool_size=5, echo=settings.DB_ECHO)
+async_session = sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
+sync_engine = create_engine(SYNC_DB_URL, echo=settings.DB_ECHO, pool_pre_ping=True)
 
-engine = create_async_engine(settings.DB_URL, echo=settings.DB_ECHO, future=True)
-async_session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
+def migrate():
+    if subprocess.run(["alembic", "upgrade", 'head']).returncode > 0:
+        raise Exception(f'DB migration failed')
+

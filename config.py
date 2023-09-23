@@ -51,13 +51,13 @@ logging.config.dictConfig(LOGGING_CONFIG)
 class Settings(BaseModel):
     API_TOKEN: str = os.getenv('API_TOKEN')
 
-    DB_HOST: str = os.getenv('POSTGRES_HOST')
-    DB_PORT: int = int(os.getenv('POSTGRES_PORT', 5432))
-    DB_NAME: str = os.getenv('POSTGRES_NAME')
-    DB_USER: str = os.getenv('POSTGRES_USER')
-    DB_PASSWORD: str = os.getenv('POSTGRES_PASSWORD')
+    DB_HOST: str = os.getenv('DB_HOST')
+    DB_PORT: int = int(os.getenv('DB_PORT', 5432))
+    DB_DATABASE: str = os.getenv('DB_DATABASE')
+    DB_NAME: str = os.getenv('DB_NAME')
+    DB_USER: str = os.getenv('DB_USER')
+    DB_PASSWORD: str = os.getenv('DB_PASSWORD')
 
-    DB_URL: str = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     DB_ECHO: bool = False
 
     MAIL_LOGIN: str = os.getenv('MAIL_LOGIN')
@@ -72,3 +72,10 @@ class Settings(BaseModel):
 logger = logging.getLogger('info_logger')
 
 settings = Settings()
+
+
+DB_URL = f'{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}'
+ASYNC_DB_URL = f'postgresql+asyncpg://{DB_URL}'
+SYNC_DB_URL = f'postgresql://{DB_URL}'
+
+WORK_SCHEMA = 'tg'
