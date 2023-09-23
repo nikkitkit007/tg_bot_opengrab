@@ -17,6 +17,7 @@ from tg_bot.utils.user import (validate, is_mail_exist, get_user_role, set_user_
 from tg_bot.utils.mail import send_code_email, send_news_letter_email
 from tg_bot.schema import Roles
 
+from db.worker.user_wrk import UserWorker
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -26,7 +27,15 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 
 
+async def on_startapp(dp):
+    # todo send message to admins
+    logger.info('Bot is running...')
+
+
 async def is_auth(tg_id: int) -> bool:
+    a = await UserWorker.get(tg_id)
+    print(a)
+
     if res := await get_user_role(user_tg_id=tg_id):
         return True
     return False
@@ -220,7 +229,7 @@ async def scheduler():
         1) get users list
         2) if time: -> sent message
         """
-        print('get users list...')
+        print('Run scheduler task...')
         await asyncio.sleep(60)
 
 
