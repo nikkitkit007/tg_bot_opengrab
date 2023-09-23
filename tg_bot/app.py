@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 from random import randint
@@ -6,14 +7,14 @@ from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.utils import executor
 from aiogram import Bot, Dispatcher, types
 from aiogram.dispatcher import FSMContext
-
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+
 from config import settings, logger
 from tg_bot.states import (MenuState, AuthState, AdminMenuState, SubscribeSettings,
                            Newsletter, get_keyboard, AdminSettingsState, AdminUserControlState)
 
-from tg_bot.utils import (validate, send_code_email, is_mail_exist, get_user_role, set_user_tg, send_news_letter_email,
-                          get_user_mail, get_news_letter)
+from tg_bot.utils.user import (validate, is_mail_exist, get_user_role, set_user_tg, get_user_mail, get_news_letter)
+from tg_bot.utils.mail import send_code_email, send_news_letter_email
 from tg_bot.schema import Roles
 
 
@@ -77,7 +78,7 @@ async def process_email(message: types.Message, state: FSMContext):
         #     await UserWorker.update(session, tg_id=message.from_user.id, mail=email)
         #     await session.commit()
 
-        if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email) or not is_mail_exist(email):
+        if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email) or not await is_mail_exist(email):
             await message.reply(f"Почта не верна, попробуйте снова")
             return await AuthState.waiting_for_email.set()
         else:
@@ -118,8 +119,7 @@ async def main_menu(message: types.Message, state: FSMContext):
 @dp.message_handler(state=SubscribeSettings.main)
 async def subscribe_settings_menu(message: types.Message, state: FSMContext):
     if message.text == 'Информация о подписке':
-        await message.reply('GET api/subscribe/info')
-        logger.info(message.text)
+        await message.answer(f'{await get_user_role(message.from_user.id)}')
     elif message.text == 'Изменить время получения рассылки':
         await message.reply('PUT api/subscribe/settings')
         logger.info(message.text)
@@ -213,6 +213,12 @@ async def admin_settings(message: types.Message, state: FSMContext):
         await message.answer(AdminMenuState.text_main, reply_markup=AdminMenuState.keyboard)
     else:
         await message.reply('Не верная команда.')
+
+
+async def scheduler():
+    logger.info('Start scheduler...')
+    while True:
+        await asyncio.sleep(60)
 
 
 if __name__ == '__main__':
