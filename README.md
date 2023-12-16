@@ -23,3 +23,8 @@ ___
 - scheduler  # Запускается ассинхронная задача (пока пустая) 
 - migrate    # Запускается миграция БД (создается схема базы данных)
 - tg_bot     # Запускается телеграмм бот
+
+### Dependencies
+1) PHP Backend
+2) Postgres 
+3) tg_bot_api: [**How get tg_bot API_TOKEN**](https://botcreators.ru/blog/kak-sozdat-svoego-bota-v-botfather/)
