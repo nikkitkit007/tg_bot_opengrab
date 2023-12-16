@@ -1,7 +1,7 @@
 # TG-bot 
 
 Allow you to control and get you subscribe info
-
+___
 ## Project info
 
 ### Components 
@@ -14,4 +14,7 @@ Allow you to control and get you subscribe info
 
 ## Quiq start
 
-1) run ./main.py
+1) ``pip install -r requirements.txt``
+2) ``run ./main.py``
+
+## 

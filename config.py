@@ -3,7 +3,6 @@ import logging.config
 import os
 from pydantic import BaseModel
 
-
 load_dotenv()
 
 LOGGING_CONFIG = {
@@ -73,9 +72,10 @@ logger = logging.getLogger('info_logger')
 
 settings = Settings()
 
-
 DB_URL = f'{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}'
 ASYNC_DB_URL = f'postgresql+asyncpg://{DB_URL}'
 SYNC_DB_URL = f'postgresql://{DB_URL}'
 
 WORK_SCHEMA = 'tg'
+
+SCHEDULER_DELAY_TIME = 60  # seconds

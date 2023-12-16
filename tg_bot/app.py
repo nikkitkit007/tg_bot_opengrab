@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import re
 from random import randint
@@ -34,7 +33,6 @@ async def on_startapp(dp):
 
 async def is_auth(tg_id: int) -> bool:
     a = await UserWorker.get(tg_id)
-    print(a)
 
     if res := await get_user_role(user_tg_id=tg_id):
         return True
@@ -83,6 +81,7 @@ async def process_email(message: types.Message, state: FSMContext):
         code = str(randint(10000, 100000 - 1))
         data['email'] = email
         data['code'] = code
+        # !todo uncomment when DB is running
         # async with async_session() as session:
         #     await UserWorker.update(session, tg_id=message.from_user.id, mail=email)
         #     await session.commit()
@@ -91,7 +90,7 @@ async def process_email(message: types.Message, state: FSMContext):
             await message.reply(f"Почта не верна, попробуйте снова")
             return await AuthState.waiting_for_email.set()
         else:
-            send_code_email(email, code)  # отправка кода
+            send_code_email(email, code)
             await message.reply(f"На почту: {email} отправлено письмо с кодом подтверждения.\nВведите код из письма.")
             return await AuthState.waiting_for_code.set()
 
@@ -220,17 +219,6 @@ async def admin_settings(message: types.Message, state: FSMContext):
         await message.answer(AdminMenuState.text_main, reply_markup=AdminMenuState.keyboard)
     else:
         await message.reply('Не верная команда.')
-
-
-async def scheduler():
-    logger.info('Start scheduler...')
-    while True:
-        """
-        1) get users list
-        2) if time: -> sent message
-        """
-        print('Run scheduler task...')
-        await asyncio.sleep(60)
 
 
 if __name__ == '__main__':
