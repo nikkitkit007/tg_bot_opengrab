@@ -13,8 +13,13 @@ ___
 
 
 ## Quiq start
+1) Create .env (copy .env.template and modify)
+2) ``pip install -r requirements.txt``
+3) ``run ./main.py``
 
-1) ``pip install -r requirements.txt``
-2) ``run ./main.py``
+### Explanations
 
-## 
+**main.py** запускает:
+- scheduler  # Запускается ассинхронная задача (пока пустая) 
+- migrate    # Запускается миграция БД (создается схема базы данных)
+- tg_bot     # Запускается телеграмм бот
